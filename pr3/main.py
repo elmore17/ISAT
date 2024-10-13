@@ -10,7 +10,6 @@ load_dotenv()
 #419376445 id Марии
 #472133870 id Danil
 #386272361 id Никита
-#https://oauth.vk.com/authorize?client_id=145484&scope=offline&redirect_uri=https://api.vk.com/blank.html&display=page&response_type=token
 
 def main():
     team = {'Александр': '164679738', 'Мария': '419376445', 'Данила': '472133870','Никита': '386272361'}
