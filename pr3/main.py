@@ -1,7 +1,11 @@
 import vk_api
 import json
 import time
+import os
+from dotenv import load_dotenv
 
+
+load_dotenv()
 #164679738 id Александр
 #419376445 id Марии
 #472133870 id Danil
@@ -10,7 +14,7 @@ import time
 
 def main():
     team = {'Александр': '164679738', 'Мария': '419376445', 'Данила': '472133870','Никита': '386272361'}
-    access_token = "vk1.a._5NZyHP9vsNUirHDJFZ2-Mv4RTLxRD7UmH-iTZ0wxZWZtmWzOvtMBBp5xNocLR0SgbMKpmLn2CAud1Yru6d1PKpaoGDFTkhdO8Xf-mE69VAhwoOrwW1suED-Ng9DrYouTP5DEkJj00kP0Chwi5qY1TVZNR5S6wMiwxM9yh3UC4k6AN6k-C-a-tfZFKv8O6Igg4MYz5RoAjXR9cPugCEzYA"
+    access_token = os.getenv("TOKEN")
     vk_session = vk_api.VkApi(token=access_token)
     vk = vk_session.get_api()
     team_data = {}
