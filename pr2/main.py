@@ -130,7 +130,7 @@ for row in test_set:
     predictions.append(prediction)
 
 # Фактические классы тестовой выборки
-actual = [row[-1] for row in test_set]
+actual = [row[1] for row in test_set]
 
 def analyze_k(train_set, test_set, actual, k_values):
     accuracy_results = {}
