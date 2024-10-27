@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Граф связей</title>
+    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <style>
+        #network {
+            width: 100%;
+            height: 800px;
+            border: 1px solid lightgray;
+        }
+        #info {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="info"></div>
+    <div id="network"></div>
+
+    <script>
+        const CHUNK_SIZE_NODES = 100;
+        const CHUNK_SIZE_EDGES = 200;
+        let currentNodeIndex = 0;
+        let currentEdgeIndex = 0;
+        let networkData = { nodes: [], edges: [] };
+        let graphData;
+
+        async function fetchGraphData() {
+            try {
+                const response = await fetch('graph_data.json');
+                if (!response.ok) {
+                    throw new Error('Сетевая ошибка: ' + response.statusText);
+                }
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                console.error('Ошибка загрузки данных графа:', error);
+            }
+        }
+
+        function loadNodesChunk(data, network) {
+            if (currentNodeIndex >= data.nodes.length) {
+                console.log('Все узлы уже загружены');
+                return;
+            }
+            
+            const endIndex = Math.min(currentNodeIndex + CHUNK_SIZE_NODES, data.nodes.length);
+            const newNodes = data.nodes.slice(currentNodeIndex, endIndex);
+            networkData.nodes.push(...newNodes);
+            network.body.data.nodes.update(newNodes);
+            currentNodeIndex = endIndex;
+
+            if (currentNodeIndex < data.nodes.length) {
+                requestAnimationFrame(() => loadNodesChunk(data, network));
+            } else {
+                console.log('Все узлы загружены');
+            }
+        }
+
+        function loadEdgesChunk(data, network) {
+            if (currentEdgeIndex >= data.edges.length) {
+                console.log('Все рёбра уже загружены');
+                return;
+            }
+            
+            const endIndex = Math.min(currentEdgeIndex + CHUNK_SIZE_EDGES, data.edges.length);
+            const newEdges = data.edges.slice(currentEdgeIndex, endIndex);
+            networkData.edges.push(...newEdges);
+            network.body.data.edges.update(newEdges);
+            currentEdgeIndex = endIndex;
+
+            if (currentEdgeIndex < data.edges.length) {
+                requestAnimationFrame(() => loadEdgesChunk(data, network));
+            } else {
+                console.log('Все рёбра загружены');
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", async function () {
+            graphData = await fetchGraphData();
+            if (!graphData) return;
+
+            const container = document.getElementById('network');
+
+            const options = {
+                nodes: {
+                    borderWidth: 2,
+                    size: 30,
+                    font: {
+                        size: 14
+                    }
+                },
+                edges: {
+                    color: 'gray'
+                },
+                layout: {
+                    improvedLayout: false
+                },
+                physics: {
+                    enabled: true,
+                    stabilization: {
+                        iterations: 1000,
+                        updateInterval: 25
+                    }
+                },
+                interaction: {
+                    hover: true
+                }
+            };
+
+            const network = new vis.Network(container, { nodes: [], edges: [] }, options);
+
+            // Динамическая подгрузка узлов и рёбер
+            requestAnimationFrame(() => loadNodesChunk(graphData, network));
+            requestAnimationFrame(() => loadEdgesChunk(graphData, network));
+
+            // Обновление информации о количестве узлов и рёбер
+            setInterval(updateInfo, 1000);
+        });
+
+        function updateInfo() {
+            const infoDiv = document.getElementById('info');
+            const numNodes = networkData.nodes.length;
+            const numEdges = networkData.edges.length;
+            infoDiv.innerHTML = `Количество узлов: ${numNodes}, Количество рёбер: ${numEdges}`;
+        }
+    </script>
+</body>
+</html>
