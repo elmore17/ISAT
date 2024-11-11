@@ -2,7 +2,7 @@ import json
 import networkx as nx
 import numpy as np
 
-with open('team_data.json', 'r', encoding='utf-8') as f:
+with open('pr3/team_data_with_friends.json', 'r', encoding='utf-8') as f:
     data = json.load(f)
 
 G = nx.Graph()
@@ -36,6 +36,11 @@ for user_key, user_info in data['team'].items():
                 fof_id = int(fof['id'])
                 G.add_node(fof_id, label=fof['name'], photo=fof['photo'])
                 G.add_edge(friend_id, fof_id)
+
+                if 'friend_with' in fof and fof['friend_with']:
+                    for fw_id in fof['friend_with']:
+                        fw_id = int(fw_id)
+                        G.add_edge(fof_id, fw_id)
 
 # Преобразуем узлы и связи для Vis
 nodes = []
