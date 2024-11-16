@@ -63,9 +63,13 @@ def run_schelling_simulation(grid_size=20, blue_ratio=0.45, red_ratio=0.45, min_
         grid[dissatisfied_cells[0][random_dissatisfied_index], dissatisfied_cells[1][random_dissatisfied_index]] = 0
 
         ax.clear()
-        ax.set_title(f"Итерация {iteration + 1}")
+        ax.set_title(f"Итерация {iteration + 1} | k: {min_satisfaction}")
         ax.imshow(grid, cmap='bwr', vmin=-1, vmax=1)
         plt.pause(0.5)
+
+        # Сохранение изображения каждые 10 итераций
+        if (iteration + 1) % 10 == 0:
+            plt.savefig(f'grid_state_iteration_{iteration + 1}.jpg', format='jpg')
 
     plt.ioff()
     plt.show()
@@ -74,8 +78,10 @@ if __name__ == '__main__':
     grid_size = int(input("Введите размер сетки: "))
     blue_ratio = float(input("Введите долю синих клеток: "))
     red_ratio = float(input("Введите долю красных клеток: "))
+    
     if blue_ratio + red_ratio > 0.9:
         raise ValueError("Сумма долей синих и красных клеток должна быть <= 0.9, чтобы оставить место для пустых клеток")
+    
     min_satisfaction = int(input("Введите минимальное количество соседей одного цвета для удовлетворения: "))
 
     run_schelling_simulation(grid_size, blue_ratio, red_ratio, min_satisfaction)
