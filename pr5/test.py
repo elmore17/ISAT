@@ -18,7 +18,7 @@ class LiquidDistributionEnv(gym.Env):
         return self.state
     
     def step(self, action):
-        # Переливание жидкости в соответствии с действием
+    # Переливание жидкости в соответствии с действием
         from_idx = action[0]
         to_idx = action[1]
         
@@ -26,17 +26,19 @@ class LiquidDistributionEnv(gym.Env):
             transfer_amount = min(self.state[from_idx], (np.mean(self.state) - self.state[to_idx]))
             self.state[from_idx] -= transfer_amount
             self.state[to_idx] += transfer_amount
+        else:
+            transfer_amount = 0  # Если в стакане нет жидкости, ничего не переливаем
         
         done = np.all(self.state == np.mean(self.state))
         reward = -np.sum(np.abs(self.state - np.mean(self.state)))  # Награда за равенство
         
-        return self.state, reward, done, {}
+        return self.state, reward, done, {"from_idx": from_idx, "to_idx": to_idx, "transfer_amount": transfer_amount}
     
     def render(self):
         print(f"Стаканы: {self.state}")
 
 # Загрузка модели
-model = PPO.load("liquid_distribution_model")
+model = PPO.load("pr5/liquid_distribution_model")
 
 # Тестирование модели на заданном состоянии стаканов
 def test_model(model, initial_state):
@@ -53,21 +55,26 @@ def test_model(model, initial_state):
     while not done:
         action, _states = model.predict(env_test.state)  # Предсказание действия
         states_history.append(env_test.state.copy())  # Сохраняем текущее состояние
-        env_test.step(action)  # Выполнение действия в среде
-        total_reward += -np.sum(np.abs(env_test.state - np.mean(env_test.state)))  # Награда за равенство
+        
+        # Выполнение действия в среде и получение информации о переливании
+        state, reward, done, info = env_test.step(action)
+        
+        total_reward += reward  # Обновляем общую награду
+        
+        # Выводим информацию о действии
+        print(f"Шаг {steps + 1}: Перелито {info['transfer_amount']} из стакана {info['from_idx']} в стакан {info['to_idx']}")
         
         # Проверка на завершение эпизода
-        done = np.all(env_test.state == np.mean(env_test.state))
         steps += 1  # Увеличиваем счетчик шагов
 
     # Выводим все состояния за шаги
     for i, state in enumerate(states_history):
-        print(f"Шаг {i + 1}: {state}")
+        print(f"Состояние на шаге {i + 1}: {state}")
 
     print("Конечное состояние стаканов:", env_test.state)
     print("Общая награда:", total_reward)
     print("Количество итераций:", steps)
 
 # Задаем начальное состояние стаканов и тестируем модель
-initial_state = [28, 18, 8, 58, 78]
+initial_state = [28, 58, 8, 58, 78]
 test_model(model, initial_state)
