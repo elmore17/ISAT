@@ -62,7 +62,10 @@ def test_model(model, initial_state):
         total_reward += reward  # Обновляем общую награду
         
         # Выводим информацию о действии
-        print(f"Шаг {steps + 1}: Перелито {info['transfer_amount']} из стакана {info['from_idx']} в стакан {info['to_idx']}")
+        if info['transfer_amount'] < 0:
+            print(f"Шаг {steps + 1}: Перелито {abs(info['transfer_amount'])} из стакана {info['to_idx'] + 1} в стакан {info['from_idx'] + 1}")
+        else:
+            print(f"Шаг {steps + 1}: Перелито {abs(info['transfer_amount'])} из стакана {info['from_idx'] + 1} в стакан {info['to_idx'] + 1}")
         
         # Проверка на завершение эпизода
         steps += 1  # Увеличиваем счетчик шагов
